@@ -1,0 +1,28 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="mb-8">
+    <%= link_to "← Back to Posts", posts_path, class: "text-blue-600 hover:underline" %>
+  </div>
+
+  <article class="bg-white rounded-lg shadow-sm p-8">
+    <div class="mb-6">
+      <h1 class="text-4xl font-bold mb-2"><%= @post.title %></h1>
+      <div class="flex gap-4 text-sm text-gray-500">
+        <span><%= @post.created_at.strftime("%B %d, %Y") %></span>
+        <span class="<%= @post.published ? 'text-green-600' : 'text-gray-400' %>">
+          <%= @post.published ? '✓ Published' : '○ Draft' %>
+        </span>
+      </div>
+    </div>
+
+    <div class="prose max-w-none mb-8">
+      <%= simple_format(@post.body) %>
+    </div>
+
+    <div class="flex gap-4 pt-6 border-t">
+      <%= link_to "Edit", edit_post_path(@post), class: "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" %>
+      <%= button_to "Delete", post_path(@post), method: :delete,
+          data: { turbo_confirm: "Are you sure?" },
+          class: "bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" %>
+    </div>
+  </article>
+</div>

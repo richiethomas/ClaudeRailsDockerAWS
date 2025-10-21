@@ -1,0 +1,10 @@
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold mb-2">New Post</h1>
+    <%= link_to "← Back to Posts", posts_path, data: { turbo_frame: "_top" }, class: "text-blue-600 hover:underline" %>
+  </div>
+
+  <div id="new_post_form">
+    <%= render partial: "form", locals: { post: @post } %>
+  </div>
+</div>
