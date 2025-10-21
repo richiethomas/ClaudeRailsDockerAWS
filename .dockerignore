@@ -35,3 +35,33 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 /public/assets
+
+
+# Test files (not needed in production)
+/test/
+/spec/
+/coverage/
+
+# Documentation
+*.md
+/doc/
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker files (no need to copy Docker config into the image)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
