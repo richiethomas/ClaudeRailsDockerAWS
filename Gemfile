@@ -80,3 +80,5 @@ group :development do
 end
 
 gem 'comments', path: 'engines/comments'
+gem 'analytics', git: 'https://github.com/richiethomas/analytics-engine.git'
+# gem 'groupdate'
