@@ -82,3 +82,5 @@ end
 gem 'comments', path: 'engines/comments'
 gem 'analytics', git: 'https://github.com/richiethomas/analytics-engine.git'
 # gem 'groupdate'
+
+gem 'admin', path: 'engines/admin'
