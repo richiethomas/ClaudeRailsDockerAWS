@@ -2,6 +2,9 @@ class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update, :destroy]
 
   def index
+    # Intentional error for deployment tracking demo (30% failure rate)
+    raise "Intentional error for testing!" if rand < 0.3
+
     @posts = Post.all
   end
 
