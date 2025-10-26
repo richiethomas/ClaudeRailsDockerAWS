@@ -6,6 +6,7 @@ if Rails.env.production?
     # Configure the Datadog tracer
     c.service = 'blog-app'
     c.env = ENV.fetch('DD_ENV', 'production')
+    c.version = ENV.fetch('DD_VERSION', 'unknown')
 
     # Enable distributed tracing
     c.tracing.enabled = true

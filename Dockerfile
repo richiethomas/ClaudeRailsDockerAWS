@@ -2,6 +2,7 @@
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version and Gemfile
 ARG RUBY_VERSION=3.2.2
+ARG GIT_SHA=unknown
 FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
 
 # Rails app lives here
@@ -45,6 +46,10 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 # Final stage for app image
 FROM base
+
+# Add git SHA label for version tracking
+ARG GIT_SHA=unknown
+LABEL git.sha="${GIT_SHA}"
 
 # Install packages needed for deployment
 RUN apt-get update -qq && \
