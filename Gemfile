@@ -84,3 +84,7 @@ gem 'analytics', git: 'https://github.com/richiethomas/analytics-engine.git'
 # gem 'groupdate'
 
 gem 'admin', path: 'engines/admin'
+gem 'aws-sdk-cloudwatchlogs'
+
+# Datadog APM for application performance monitoring
+gem 'datadog'
