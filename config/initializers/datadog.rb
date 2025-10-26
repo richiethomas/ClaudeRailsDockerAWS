@@ -4,7 +4,7 @@ if Rails.env.production?
 
   Datadog.configure do |c|
     # Configure the Datadog tracer
-    c.service = 'blog-app'
+    c.service = ENV.fetch('DD_SERVICE', 'blog-app')
     c.env = ENV.fetch('DD_ENV', 'production')
     c.version = ENV.fetch('DD_VERSION', 'unknown')
 
