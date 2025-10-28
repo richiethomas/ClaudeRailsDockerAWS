@@ -30,6 +30,7 @@ echo "Starting new container..."
 docker run -d \
   --name blog-app \
   --network host \
+  --label "com.datadoghq.ad.logs"='[{"source":"ruby","service":"blog-app"}]' \
   -e RAILS_ENV=production \
   -e SECRET_KEY_BASE="$SECRET_KEY_BASE" \
   -e DATABASE_URL="$DATABASE_URL" \
