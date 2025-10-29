@@ -2,7 +2,12 @@ class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update, :destroy]
 
   def index
-    @posts = Post.all
+    # Fetch all posts with their associated comments
+    @posts = Post.includes(:comments).all
+
+    # Calculate some stats for the dashboard
+    @total_views = Analytics::PageView.count
+    @recent_posts = @posts.select { |p| p.created_at > 7.days.ago }
   end
 
   def show
