@@ -1,13 +1,9 @@
 class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_user!, except: [:index, :show]
 
   def index
-    # Fetch all posts with their associated comments
-    @posts = Post.includes(:comments).all
-
-    # Calculate some stats for the dashboard
-    @total_views = Analytics::PageView.count
-    @recent_posts = @posts.select { |p| p.created_at > 7.days.ago }
+    @posts = Post.all
   end
 
   def show
@@ -18,7 +14,7 @@ class PostsController < ApplicationController
   end
 
   def create
-    @post = Post.new(post_params)
+    @post = current_user.posts.new(post_params)
 
     respond_to do |format|
       if @post.save

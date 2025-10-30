@@ -3,10 +3,12 @@
       <h1 class="text-3xl font-bold mb-4">Posts</h1>
 
       <!-- Inline form for creating posts -->
-      <div id="new_post_form" class="mb-8 border rounded-lg p-6 bg-gray-50">
-        <h2 class="text-xl font-semibold mb-4">Create New Post</h2>
-        <%= render partial: "form", locals: { post: Post.new } %>
-      </div>
+      <% if user_signed_in? %>
+        <div id="new_post_form" class="mb-8 border rounded-lg p-6 bg-gray-50">
+          <h2 class="text-xl font-semibold mb-4">Create New Post</h2>
+          <%= render partial: "form", locals: { post: Post.new } %>
+        </div>
+      <% end %>
     </div>
 
     <div id="posts_list" class="space-y-4">
@@ -21,7 +23,9 @@
               <span class="<%= post.published ? 'text-green-600' : 'text-gray-400' %>">
                 <%= post.published ? '✓ Published' : '○ Draft' %>
               </span>
-              <%= link_to "Edit", edit_post_path(post), class: "text-blue-600 hover:underline" %>
+              <% if user_signed_in? %>
+                <%= link_to "Edit", edit_post_path(post), class: "text-blue-600 hover:underline" %>
+              <% end %>
             </div>
           </div>
         <% end %>

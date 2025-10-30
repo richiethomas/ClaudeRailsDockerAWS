@@ -1,0 +1,28 @@
+{
+  "Changes": [
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "richiestestapp.com",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z35SXDOTRQ7X7K",
+          "DNSName": "blog-app-alb-1927051096.us-east-1.elb.amazonaws.com",
+          "EvaluateTargetHealth": true
+        }
+      }
+    },
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "www.richiestestapp.com",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z35SXDOTRQ7X7K",
+          "DNSName": "blog-app-alb-1927051096.us-east-1.elb.amazonaws.com",
+          "EvaluateTargetHealth": true
+        }
+      }
+    }
+  ]
+}

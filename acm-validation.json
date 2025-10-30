@@ -1,0 +1,30 @@
+{
+  "Changes": [
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "_bd2a6dfb092f450fabac7a62d58f85c9.richiestestapp.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "_589a8c7a7889821936d5945fa11779d9.jkddzztszm.acm-validations.aws."
+          }
+        ]
+      }
+    },
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "_8bfb792f2f31e0368488980fb2ad4e3b.www.richiestestapp.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "_e29372857deecb96058b72ee85cf451e.jkddzztszm.acm-validations.aws."
+          }
+        ]
+      }
+    }
+  ]
+}

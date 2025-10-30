@@ -1,8 +1,10 @@
 module Comments
   class CommentsController < ApplicationController
+    before_action :authenticate_user!, only: [:create, :destroy]
+
     def create
       @post = Post.find(params[:post_id])
-      @comment = @post.comments.build(comment_params)
+      @comment = current_user.comments.build(comment_params.merge(post: @post))
 
       if @comment.save
         redirect_to main_app.post_url(@post), notice: 'Comment added'
