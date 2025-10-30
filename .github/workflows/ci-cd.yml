@@ -105,8 +105,7 @@ jobs:
             --instance-ids ${{ env.EC2_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
-              "cd /home/ssm-user",
-              "source deploy-blog-app.sh"
+              "source /home/ssm-user/deploy-blog-app.sh"
             ]' \
             --output text \
             --query 'Command.CommandId')
