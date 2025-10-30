@@ -104,24 +104,9 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids ${{ env.EC2_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
-            --parameters commands='[
-              "echo \"Stopping old container...\"",
-              "docker stop blog-app || true",
-              "docker rm blog-app || true",
-              "echo \"Authenticating with ECR...\"",
-              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}",
-              "echo \"Pulling latest image...\"",
-              "docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest",
-              "echo \"Fetching parameters from Parameter Store...\"",
-              "SECRET_KEY_BASE=$(aws ssm get-parameter --name /blog-app/production/SECRET_KEY_BASE --with-decryption --query Parameter.Value --output text)",
-              "DATABASE_URL=$(aws ssm get-parameter --name /blog-app/production/DATABASE_URL --with-decryption --query Parameter.Value --output text)",
-              "DD_ENV=$(aws ssm get-parameter --name /blog-app/production/DD_ENV --query Parameter.Value --output text)",
-              "DD_SERVICE=$(aws ssm get-parameter --name /blog-app/production/DD_SERVICE --query Parameter.Value --output text)",
-              "DD_AGENT_HOST=$(aws ssm get-parameter --name /blog-app/production/DD_AGENT_HOST --query Parameter.Value --output text)",
-              "echo \"Starting new container...\"",
-              "docker run -d --name blog-app --network host --label \"com.datadoghq.ad.logs\"=\"[{\\\"source\\\":\\\"ruby\\\",\\\"service\\\":\\\"blog-app\\\"}]\" -e RAILS_ENV=production -e SECRET_KEY_BASE=\"$SECRET_KEY_BASE\" -e DATABASE_URL=\"$DATABASE_URL\" -e DD_AGENT_HOST=\"$DD_AGENT_HOST\" -e DD_ENV=\"$DD_ENV\" -e DD_VERSION=\"${{ env.IMAGE_TAG }}\" -e DD_SERVICE=\"$DD_SERVICE\" ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest",
-              "echo \"Deployment complete! Version ${{ env.IMAGE_TAG }} is now running.\"",
-              "docker ps"
+            --parameters 'commands=[
+              "cd /home/ssm-user",
+              "source deploy-blog-app.sh"
             ]' \
             --output text \
             --query 'Command.CommandId')
