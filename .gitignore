@@ -38,3 +38,6 @@
 !/app/assets/builds/.keep
 engines/analytics/
 .vscode/
+
+# RSpec / Test coverage
+/coverage/

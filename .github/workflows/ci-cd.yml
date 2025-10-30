@@ -1,0 +1,175 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: blog-app
+  EC2_INSTANCE_ID: i-0ca24ed9a6880ef00
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: blog_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Set up database
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/blog_test
+        run: |
+          bin/rails db:create
+          bin/rails db:schema:load
+
+      - name: Run RSpec tests
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/blog_test
+        run: bundle exec rspec
+
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get short SHA
+        id: sha
+        run: echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.sha.outputs.short_sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Deploy to EC2
+        env:
+          IMAGE_TAG: ${{ steps.sha.outputs.short_sha }}
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids ${{ env.EC2_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "cd /home/ec2-user",
+              "source deploy.sh"
+            ]' \
+            --output text \
+            --query 'Command.CommandId')
+
+          echo "Deployment command ID: $COMMAND_ID"
+          echo "COMMAND_ID=$COMMAND_ID" >> $GITHUB_ENV
+
+          # Wait for deployment to complete
+          for i in {1..30}; do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id $COMMAND_ID \
+              --instance-id ${{ env.EC2_INSTANCE_ID }} \
+              --query 'Status' \
+              --output text)
+
+            echo "Deployment status: $STATUS"
+
+            if [ "$STATUS" = "Success" ]; then
+              echo "Deployment successful!"
+              break
+            elif [ "$STATUS" = "Failed" ]; then
+              echo "Deployment failed!"
+              aws ssm get-command-invocation \
+                --command-id $COMMAND_ID \
+                --instance-id ${{ env.EC2_INSTANCE_ID }} \
+                --query 'StandardErrorContent' \
+                --output text
+              exit 1
+            fi
+
+            sleep 10
+          done
+
+      - name: Run database migrations
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ env.EC2_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["docker exec blog-app bin/rails db:migrate"]' \
+            --output text
+
+      - name: Health check
+        run: |
+          echo "Waiting for application to be healthy..."
+          sleep 15
+
+          for i in {1..10}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://richiestestapp.com/ || echo "000")
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Health check passed! Application is responding with HTTP 200"
+              exit 0
+            fi
+
+            echo "Attempt $i: HTTP $HTTP_CODE - Retrying..."
+            sleep 5
+          done
+
+          echo "Health check failed after 10 attempts"
+          exit 1
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "🚀 Deployment successful!"
+          echo "Version: ${{ steps.sha.outputs.short_sha }}"
+          echo "Image: ${{ steps.build-image.outputs.image }}"
+          echo "URL: https://richiestestapp.com"

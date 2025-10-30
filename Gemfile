@@ -65,8 +65,28 @@ group :development, :test do
   # For better Rails console experience
   gem "pry-rails"
 
+  # RSpec for testing
+  gem "rspec-rails", "~> 6.1.0"
+
   # Factory Bot for test data
   gem "factory_bot_rails"
+
+  # Shoulda matchers for cleaner tests
+  gem "shoulda-matchers", "~> 6.0"
+end
+
+group :test do
+  # Capybara for integration testing
+  gem "capybara"
+
+  # Selenium for system tests
+  gem "selenium-webdriver"
+
+  # Database cleaner for test isolation
+  gem "database_cleaner-active_record"
+
+  # SimpleCov for code coverage
+  gem "simplecov", require: false
 end
 
 group :development do
